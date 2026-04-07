@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Analytics – GreenPlate</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --forest:#0e2a1a;--deep:#1a3d28;--mid:#2d6a47;--fresh:#3d9970;--lime:#6fcf97;
+    --accent:#a8e6c1;--gold:#c8a84b;--cream:#f5f1e8;--offwhite:#fafaf7;
+    --text:#1a2e22;--muted:#5a7a68;--border:rgba(45,106,71,.15);--radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:var(--offwhite);color:var(--text)}
+
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(14,42,26,.95);backdrop-filter:blur(14px);border-bottom:1px solid rgba(111,207,151,.15)}
+  .nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--lime),var(--fresh));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+  .logo-text{font-family:'Playfair Display',serif;font-size:1.2rem;color:#fff;font-weight:700}
+  .logo-text span{color:var(--lime)}
+  .nav-links{display:flex;gap:6px}
+  .nav-links a{color:rgba(255,255,255,.65);text-decoration:none;padding:7px 14px;border-radius:8px;font-size:.85rem;font-weight:500;transition:.2s}
+  .nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(111,207,151,.12)}
+
+  .page-wrap{padding-top:64px;min-height:100vh}
+  .page-hero{background:linear-gradient(135deg,var(--forest),var(--deep));padding:56px 24px 48px;text-align:center}
+  .page-tag{display:inline-block;background:rgba(111,207,151,.15);border:1px solid rgba(111,207,151,.3);border-radius:50px;padding:5px 16px;color:var(--lime);font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+  .page-title{font-family:'Playfair Display',serif;font-size:2.4rem;color:#fff;font-weight:700;margin-bottom:10px}
+  .page-sub{color:rgba(255,255,255,.5);font-size:.95rem}
+
+  .content{max-width:1200px;margin:0 auto;padding:40px 24px}
+
+  /* STATS ROW */
+  .stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:36px}
+  .mini-card{background:#fff;border-radius:var(--radius);padding:18px 16px;border:1px solid var(--border);text-align:center;transition:.3s}
+  .mini-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(14,42,26,.08)}
+  .mc-icon{font-size:1.5rem;margin-bottom:8px}
+  .mc-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--forest)}
+  .mc-lbl{color:var(--muted);font-size:.73rem;margin-top:3px;font-weight:500}
+
+  /* CHART CARDS */
+  .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:24px}
+  .charts-grid2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-bottom:24px}
+  .chart-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:26px;overflow:hidden}
+  .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+  .chart-title{font-weight:700;font-size:.95rem;color:var(--forest);display:flex;align-items:center;gap:8px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted);font-weight:500}
+  .legend-dot{width:10px;height:10px;border-radius:3px}
+  canvas{max-width:100%;display:block}
+
+  /* CSS BAR CHART */
+  .css-chart{display:flex;flex-direction:column;gap:12px}
+  .bar-row{display:flex;align-items:center;gap:12px}
+  .bar-label{min-width:80px;font-size:.8rem;font-weight:600;color:var(--text);text-align:right}
+  .bar-track{flex:1;height:28px;background:rgba(45,106,71,.07);border-radius:6px;overflow:hidden;position:relative}
+  .bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:.76rem;font-weight:700;color:#fff;transition:width 1.2s ease;width:0}
+  .bar-val{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.76rem;font-weight:700;color:var(--forest)}
+
+  /* DONUT CSS */
+  .donut-wrap{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
+  .donut-legend{display:flex;flex-direction:column;gap:10px}
+  .donut-leg-item{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text)}
+  .donut-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+  .donut-leg-val{font-weight:700;color:var(--forest);margin-left:auto;min-width:36px;text-align:right}
+
+  /* TREND TABLE */
+  .trend-table{width:100%;border-collapse:collapse}
+  .trend-table th{padding:10px 14px;text-align:left;font-size:.73rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+  .trend-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.85rem}
+  .trend-table tr:last-child td{border:none}
+  .trend-table tr:hover td{background:rgba(45,106,71,.03)}
+  .eff-bar{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--fresh),var(--lime));display:inline-block;vertical-align:middle;margin-left:8px}
+  .badge{display:inline-flex;padding:2px 9px;border-radius:10px;font-size:.7rem;font-weight:700}
+  .bg-green{background:rgba(111,207,151,.15);color:var(--mid)}
+  .bg-yellow{background:rgba(200,168,75,.15);color:#9a6a00}
+
+  @media(max-width:1000px){
+    .charts-grid{grid-template-columns:1fr}
+    .charts-grid2{grid-template-columns:1fr 1fr}
+    .stats-row{grid-template-columns:repeat(3,1fr)}
+  }
+  @media(max-width:600px){
+    .stats-row{grid-template-columns:repeat(2,1fr)}
+    .charts-grid2{grid-template-columns:1fr}
+    .nav-links{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-icon">🌿</div><span class="logo-text">Green<span>Plate</span></span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="analytics.html" class="active">Analytics</a>
+      <a href="admin.html">Admin</a>
+      <a href="student.html">Student</a>
+      <a href="ngo.html">NGO</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-hero">
+    <div class="page-tag">Live Analytics</div>
+    <h1 class="page-title">Canteen Waste Intelligence</h1>
+    <p class="page-sub">Real-time data on food prepared, sold, wasted, and donated — making sustainability measurable.</p>
+  </div>
+
+  <div class="content">
+
+    <!-- MINI STATS -->
+    <div class="stats-row">
+      <div class="mini-card"><div class="mc-icon">🍳</div><div class="mc-val">2,660</div><div class="mc-lbl">Prepared This Week</div></div>
+      <div class="mini-card"><div class="mc-icon">✅</div><div class="mc-val">2,184</div><div class="mc-lbl">Sold This Week</div></div>
+      <div class="mini-card"><div class="mc-icon">📦</div><div class="mc-val">476</div><div class="mc-lbl">Leftover Total</div></div>
+      <div class="mini-card"><div class="mc-icon">🤝</div><div class="mc-val">315</div><div class="mc-lbl">Donated</div></div>
+      <div class="mini-card"><div class="mc-icon">💰</div><div class="mc-val">₹9,520</div><div class="mc-lbl">Cost Saved</div></div>
+      <div class="mini-card"><div class="mc-icon">🌿</div><div class="mc-val">1,190 kg</div><div class="mc-lbl">CO₂ Offset</div></div>
+    </div>
+
+    <!-- MAIN CHARTS ROW 1 -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">📊 Food Prepared vs Sold (Last 7 Days)</div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#3d9970"></div>Prepared</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#6fcf97"></div>Sold</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fcd34d"></div>Leftover</div>
+          </div>
+        </div>
+        <canvas id="chartMain" height="200"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">🥧 Surplus Distribution</div>
+        </div>
+        <div class="donut-wrap" style="margin-top:10px">
+          <canvas id="chartDonut" width="160" height="160"></canvas>
+          <div class="donut-legend">
+            <div class="donut-leg-item"><div class="donut-dot" style="background:#6fcf97"></div><span>Student Reserved</span><span class="donut-leg-val">161</span></div>
+            <div class="donut-leg-item"><div class="donut-dot" style="background:#3d9970"></div><span>NGO Donated</span><span class="donut-leg-val">154</span></div>
+            <div class="donut-leg-item"><div class="donut-dot" style="background:#fcd34d"></div><span>Wasted</span><span class="donut-leg-val">161</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 2 -->
+    <div class="charts-grid2">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">📉 Daily Waste Trend</div>
+        </div>
+        <canvas id="chartWaste" height="180"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">🤝 Meals Donated Per Day</div>
+        </div>
+        <canvas id="chartDonate" height="180"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">🍽️ Item-wise Waste</div>
+        </div>
+        <div class="css-chart" id="cssBars"></div>
+      </div>
+    </div>
+
+    <!-- WEEKLY TABLE -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">📋 Weekly Summary Report</div>
+      </div>
+      <table class="trend-table">
+        <thead>
+          <tr><th>Day</th><th>Prepared</th><th>Sold</th><th>Leftover</th><th>Donated</th><th>Efficiency</th><th>Status</th></tr>
+        </thead>
+        <tbody id="weekTable"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const prepared=[380,350,400,370,360,310,290];
+const sold=[312,298,340,305,310,260,245];
+const leftover=[68,52,60,65,50,50,45];
+const donated=[45,35,40,43,33,35,28];
+
+// CANVAS HELPERS
+function roundRect(ctx,x,y,w,h,r){
+  if(h<=0)return;
+  r=Math.min(r,h/2,w/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h);
+  ctx.lineTo(x,y+h);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// GROUPED BAR CHART
+(function(){
+  const c=document.getElementById('chartMain');
+  c.width=c.parentElement.offsetWidth-52;
+  const ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  const pad={l:40,r:20,t:20,b:36};
+  const chartW=W-pad.l-pad.r;
+  const chartH=H-pad.t-pad.b;
+  const maxVal=420;
+  const groupW=chartW/7;
+  const barW=groupW/4;
+
+  ctx.clearRect(0,0,W,H);
+  // grid
+  ctx.strokeStyle='rgba(45,106,71,.1)';
+  ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+chartH-(chartH/4)*i;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='rgba(90,122,104,.7)';ctx.font='10px DM Sans';ctx.textAlign='right';
+    ctx.fillText(Math.round(maxVal/4*i),pad.l-6,y+3);
+  }
+  // bars
+  const colors=['#2d6a47','#6fcf97','#fcd34d'];
+  const datasets=[prepared,sold,leftover];
+  datasets.forEach((data,di)=>{
+    data.forEach((val,i)=>{
+      const x=pad.l+groupW*i+barW*di+barW*0.1;
+      const h=(val/maxVal)*chartH;
+      const y=pad.t+chartH-h;
+      ctx.fillStyle=colors[di];
+      roundRect(ctx,x,y,barW*.9,h,3);
+    });
+  });
+  // labels
+  ctx.fillStyle='rgba(90,122,104,.85)';ctx.font='11px DM Sans';ctx.textAlign='center';
+  days.forEach((d,i)=>ctx.fillText(d,pad.l+groupW*i+groupW/2,H-8));
+})();
+
+// DONUT
+(function(){
+  const c=document.getElementById('chartDonut');
+  const ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  const cx=W/2,cy=H/2,r=65,ri=42;
+  const data=[161,154,161];
+  const colors=['#6fcf97','#3d9970','#fcd34d'];
+  const total=data.reduce((a,b)=>a+b,0);
+  let start=-Math.PI/2;
+  data.forEach((val,i)=>{
+    const slice=(val/total)*2*Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,start+slice);
+    ctx.closePath();
+    ctx.fillStyle=colors[i];
+    ctx.fill();
+    start+=slice;
+  });
+  // hole
+  ctx.beginPath();ctx.arc(cx,cy,ri,0,2*Math.PI);
+  ctx.fillStyle='#fff';ctx.fill();
+  ctx.fillStyle='#1a2e22';ctx.font='bold 14px Playfair Display';ctx.textAlign='center';
+  ctx.fillText('476',cx,cy+4);
+  ctx.font='10px DM Sans';ctx.fillStyle='rgba(90,122,104,.8)';
+  ctx.fillText('surplus',cx,cy+17);
+})();
+
+// LINE CHART helper
+function drawLine(canvasId,data,color,label,maxVal){
+  const c=document.getElementById(canvasId);
+  c.width=c.parentElement.offsetWidth-52;
+  const ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  const pad={l:36,r:16,t:16,b:30};
+  const chartW=W-pad.l-pad.r;
+  const chartH=H-pad.t-pad.b;
+
+  ctx.clearRect(0,0,W,H);
+  // grid
+  ctx.strokeStyle='rgba(45,106,71,.1)';ctx.lineWidth=1;
+  for(let i=0;i<=3;i++){
+    const y=pad.t+chartH-(chartH/3)*i;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='rgba(90,122,104,.7)';ctx.font='9px DM Sans';ctx.textAlign='right';
+    ctx.fillText(Math.round(maxVal/3*i),pad.l-4,y+3);
+  }
+  // area
+  const pts=data.map((v,i)=>({x:pad.l+i*(chartW/(data.length-1)),y:pad.t+chartH-(v/maxVal)*chartH}));
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x,pad.t+chartH);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,pad.t+chartH);
+  ctx.closePath();
+  const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+chartH);
+  grad.addColorStop(0,color+'44');
+  grad.addColorStop(1,color+'08');
+  ctx.fillStyle=grad;ctx.fill();
+  // line
+  ctx.beginPath();
+  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
+  // dots
+  pts.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,4,0,2*Math.PI);
+    ctx.fillStyle='#fff';ctx.fill();
+    ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
+  });
+  // x labels
+  ctx.fillStyle='rgba(90,122,104,.85)';ctx.font='10px DM Sans';ctx.textAlign='center';
+  days.forEach((d,i)=>ctx.fillText(d,pad.l+i*(chartW/(days.length-1)),H-6));
+}
+drawLine('chartWaste',leftover,'#f59e0b','Leftover',100);
+drawLine('chartDonate',donated,'#3d9970','Donated',60);
+
+// CSS bars (item-wise)
+const items=[
+  {name:'Rice',pct:72,color:'#3d9970'},
+  {name:'Chapati',pct:55,color:'#6fcf97'},
+  {name:'Dal Fry',pct:38,color:'#f59e0b'},
+  {name:'Veg Meals',pct:42,color:'#2d6a47'},
+  {name:'Lassi',pct:28,color:'#60a5fa'},
+];
+const cssCont=document.getElementById('cssBars');
+items.forEach(it=>{
+  const row=document.createElement('div');row.className='bar-row';
+  row.innerHTML=`<div class="bar-label">${it.name}</div>
+    <div class="bar-track">
+      <div class="bar-fill" style="background:${it.color};width:0%" data-w="${it.pct}%">${it.pct}%</div>
+    </div>`;
+  cssCont.appendChild(row);
+});
+setTimeout(()=>{
+  document.querySelectorAll('.bar-fill').forEach(b=>b.style.width=b.dataset.w);
+},300);
+
+// Weekly table
+const tbody=document.getElementById('weekTable');
+days.forEach((d,i)=>{
+  const eff=Math.round(sold[i]/prepared[i]*100);
+  const status=eff>=85?'<span class="badge bg-green">Excellent</span>':'<span class="badge bg-yellow">Average</span>';
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><strong>${d}</strong></td><td>${prepared[i]}</td><td>${sold[i]}</td>
+    <td style="color:#f59e0b;font-weight:600">${leftover[i]}</td>
+    <td style="color:var(--fresh);font-weight:600">${donated[i]}</td>
+    <td>${eff}%<span class="eff-bar" style="width:${eff-60}px"></span></td>
+    <td>${status}</td>`;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>

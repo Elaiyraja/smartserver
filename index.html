@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GreenPlate – Smart Canteen Food Waste Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --forest:#0e2a1a;
+    --deep:#1a3d28;
+    --mid:#2d6a47;
+    --fresh:#3d9970;
+    --lime:#6fcf97;
+    --accent:#a8e6c1;
+    --gold:#c8a84b;
+    --cream:#f5f1e8;
+    --offwhite:#fafaf7;
+    --text:#1a2e22;
+    --muted:#5a7a68;
+    --radius:14px;
+    --shadow:0 8px 32px rgba(14,42,26,.18);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'DM Sans',sans-serif;background:var(--offwhite);color:var(--text);overflow-x:hidden}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(14,42,26,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(111,207,151,.15)}
+  .nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:68px}
+  .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--lime),var(--fresh));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .logo-text{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;font-weight:700;letter-spacing:.01em}
+  .logo-text span{color:var(--lime)}
+  .nav-links{display:flex;align-items:center;gap:8px}
+  .nav-links a{color:rgba(255,255,255,.75);text-decoration:none;padding:8px 14px;border-radius:8px;font-size:.88rem;font-weight:500;transition:all .2s}
+  .nav-links a:hover{color:#fff;background:rgba(111,207,151,.15)}
+  .nav-login-group{display:flex;gap:8px}
+  .btn-nav{padding:8px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;text-decoration:none;transition:all .22s;border:1.5px solid transparent}
+  .btn-nav.admin{background:rgba(200,168,75,.15);border-color:var(--gold);color:var(--gold)}
+  .btn-nav.admin:hover{background:var(--gold);color:#fff}
+  .btn-nav.student{background:rgba(111,207,151,.15);border-color:var(--lime);color:var(--lime)}
+  .btn-nav.student:hover{background:var(--lime);color:var(--forest)}
+  .btn-nav.ngo{background:rgba(45,106,71,.3);border-color:var(--fresh);color:var(--accent)}
+  .btn-nav.ngo:hover{background:var(--fresh);color:#fff}
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px}
+  .hamburger span{width:24px;height:2px;background:#fff;border-radius:2px;transition:all .3s}
+  .mobile-menu{display:none;position:fixed;top:68px;left:0;right:0;background:var(--forest);padding:20px;z-index:99;flex-direction:column;gap:10px;border-bottom:1px solid rgba(111,207,151,.2)}
+  .mobile-menu.open{display:flex}
+  .mobile-menu a{color:rgba(255,255,255,.85);text-decoration:none;padding:12px 16px;border-radius:8px;font-weight:500}
+  .mobile-menu a:hover{background:rgba(111,207,151,.1)}
+
+  /* HERO */
+  .hero{min-height:100vh;background:linear-gradient(160deg,var(--forest) 0%,var(--deep) 55%,#1e4d2f 100%);display:flex;align-items:center;position:relative;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;pointer-events:none}
+  .hero-circle{position:absolute;border-radius:50%;opacity:.06}
+  .hc1{width:600px;height:600px;background:var(--lime);top:-150px;right:-100px}
+  .hc2{width:400px;height:400px;background:var(--fresh);bottom:-100px;left:-80px}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(111,207,151,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(111,207,151,.04) 1px,transparent 1px);background-size:50px 50px}
+  .hero-inner{max-width:1200px;margin:0 auto;padding:120px 24px 80px;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;z-index:1}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(111,207,151,.15);border:1px solid rgba(111,207,151,.3);border-radius:50px;padding:6px 16px;color:var(--lime);font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:24px}
+  .hero-badge::before{content:'🌿';font-size:1rem}
+  .hero-title{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,5vw,3.8rem);color:#fff;line-height:1.12;margin-bottom:20px}
+  .hero-title span{color:var(--lime);font-style:italic}
+  .hero-sub{color:rgba(255,255,255,.65);font-size:1.05rem;line-height:1.75;max-width:480px;margin-bottom:36px;font-weight:300}
+  .hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+  .btn-primary{padding:14px 30px;background:linear-gradient(135deg,var(--lime),var(--fresh));color:var(--forest);border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none;border:none;cursor:pointer;transition:all .25s;box-shadow:0 4px 20px rgba(111,207,151,.35)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(111,207,151,.5)}
+  .btn-outline{padding:14px 30px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.3);border-radius:10px;font-weight:600;font-size:.95rem;text-decoration:none;cursor:pointer;transition:all .25s}
+  .btn-outline:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.6)}
+  .hero-stats{display:flex;gap:30px;margin-top:48px}
+  .stat{text-align:left}
+  .stat-num{font-family:'Playfair Display',serif;font-size:2rem;color:var(--lime);font-weight:700}
+  .stat-label{color:rgba(255,255,255,.5);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
+  .hero-visual{position:relative;display:flex;align-items:center;justify-content:center}
+  .hero-card{background:rgba(255,255,255,.06);border:1px solid rgba(111,207,151,.2);border-radius:20px;padding:28px;width:100%;backdrop-filter:blur(10px)}
+  .hcard-title{color:var(--lime);font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
+  .food-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+  .food-row:last-child{border:none}
+  .food-name{color:#fff;font-size:.9rem;font-weight:500;display:flex;align-items:center;gap:8px}
+  .food-name span{font-size:1.1rem}
+  .food-bar-wrap{flex:1;margin:0 16px;height:6px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+  .food-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--fresh),var(--lime));animation:growBar 1.4s ease forwards;transform-origin:left}
+  @keyframes growBar{from{width:0}}
+  .food-pct{color:var(--lime);font-size:.82rem;font-weight:600;min-width:36px;text-align:right}
+  .pulse-dot{width:8px;height:8px;background:var(--lime);border-radius:50%;display:inline-block;animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+  .live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(111,207,151,.1);border:1px solid rgba(111,207,151,.25);border-radius:20px;padding:4px 10px;color:var(--lime);font-size:.72rem;font-weight:600;margin-bottom:14px}
+
+  /* BENEFITS */
+  .section{padding:100px 24px}
+  .section-inner{max-width:1200px;margin:0 auto}
+  .section-tag{display:inline-block;background:linear-gradient(135deg,var(--mid),var(--fresh));color:#fff;border-radius:50px;padding:5px 16px;font-size:.73rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+  .section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);color:var(--forest);line-height:1.2;margin-bottom:14px}
+  .section-sub{color:var(--muted);font-size:1rem;line-height:1.7;max-width:560px}
+  .benefits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;margin-top:56px}
+  .benefit-card{background:#fff;border-radius:var(--radius);padding:32px 28px;border:1px solid rgba(45,106,71,.1);box-shadow:0 2px 16px rgba(14,42,26,.06);transition:all .3s;position:relative;overflow:hidden}
+  .benefit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fresh),var(--lime));opacity:0;transition:.3s}
+  .benefit-card:hover{transform:translateY(-6px);box-shadow:var(--shadow);border-color:rgba(45,106,71,.2)}
+  .benefit-card:hover::before{opacity:1}
+  .benefit-icon{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,rgba(61,153,112,.12),rgba(111,207,151,.2));display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:20px}
+  .benefit-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--forest);margin-bottom:10px}
+  .benefit-text{color:var(--muted);font-size:.88rem;line-height:1.7}
+
+  /* HOW IT WORKS */
+  .hiw{background:linear-gradient(135deg,var(--forest),var(--deep));padding:100px 24px}
+  .hiw-inner{max-width:1200px;margin:0 auto}
+  .hiw .section-title{color:#fff}
+  .hiw .section-sub{color:rgba(255,255,255,.55)}
+  .steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;margin-top:56px;position:relative}
+  .steps-grid::before{content:'';position:absolute;top:36px;left:calc(12.5% + 26px);right:calc(12.5% + 26px);height:1px;background:linear-gradient(90deg,transparent,rgba(111,207,151,.3),transparent);display:none}
+  .step{text-align:center;padding:0 20px;position:relative}
+  .step-num{width:72px;height:72px;border-radius:50%;background:rgba(111,207,151,.1);border:1.5px solid rgba(111,207,151,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--lime);font-weight:700;position:relative;z-index:1}
+  .step-title{color:#fff;font-weight:600;font-size:1rem;margin-bottom:10px}
+  .step-text{color:rgba(255,255,255,.5);font-size:.85rem;line-height:1.7}
+
+  /* ROLES */
+  .roles-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:56px}
+  .role-card{border-radius:18px;padding:36px 32px;position:relative;overflow:hidden;transition:transform .3s}
+  .role-card:hover{transform:translateY(-4px)}
+  .role-admin{background:linear-gradient(135deg,#1a3a28,#234d34)}
+  .role-student{background:linear-gradient(135deg,#1e3a4a,#1a4060)}
+  .role-ngo{background:linear-gradient(135deg,#3a2a10,#4d3a18)}
+  .role-icon{font-size:2.5rem;margin-bottom:18px}
+  .role-title{font-family:'Playfair Display',serif;font-size:1.4rem;color:#fff;font-weight:700;margin-bottom:12px}
+  .role-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+  .role-list li{color:rgba(255,255,255,.65);font-size:.88rem;display:flex;align-items:center;gap:8px}
+  .role-list li::before{content:'✓';color:var(--lime);font-weight:700;font-size:.85rem}
+  .btn-role{display:inline-block;padding:11px 24px;border-radius:8px;font-size:.85rem;font-weight:700;text-decoration:none;transition:all .22s;cursor:pointer;border:none}
+  .btn-role.g{background:var(--lime);color:var(--forest)}
+  .btn-role.b{background:rgba(100,180,255,.85);color:#0a2040}
+  .btn-role.y{background:var(--gold);color:#fff}
+  .btn-role:hover{opacity:.88;transform:scale(1.03)}
+
+  /* FOOTER */
+  footer{background:var(--forest);color:rgba(255,255,255,.6);padding:60px 24px 28px}
+  .footer-inner{max-width:1200px;margin:0 auto}
+  .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+  .footer-brand .logo{margin-bottom:14px;display:inline-flex}
+  .footer-brand p{font-size:.85rem;line-height:1.75;max-width:260px}
+  .footer-col h4{color:#fff;font-weight:600;font-size:.9rem;margin-bottom:16px;letter-spacing:.03em}
+  .footer-col a{display:block;color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;margin-bottom:8px;transition:.2s}
+  .footer-col a:hover{color:var(--lime)}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:gap;gap:12px}
+  .footer-bottom p{font-size:.8rem}
+  .footer-bottom span{color:var(--lime)}
+  .contact-item{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.5);font-size:.85rem;margin-bottom:10px}
+  .contact-icon{font-size:1rem}
+
+  /* ANIMATIONS */
+  .fade-up{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+  .fade-up.visible{opacity:1;transform:translateY(0)}
+
+  @media(max-width:900px){
+    .hero-inner{grid-template-columns:1fr;gap:40px}
+    .hero-visual{display:none}
+    .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+    .nav-links,.nav-login-group{display:none}
+    .hamburger{display:flex}
+  }
+  @media(max-width:600px){
+    .hero-stats{gap:20px}
+    .footer-grid{grid-template-columns:1fr}
+    .footer-bottom{flex-direction:column;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🌿</div>
+      <span class="logo-text">Green<span>Plate</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="#benefits">Benefits</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="nav-login-group">
+      <a href="login.html?role=admin" class="btn-nav admin">Admin</a>
+      <a href="login.html?role=student" class="btn-nav student">Student</a>
+      <a href="login.html?role=ngo" class="btn-nav ngo">NGO</a>
+    </div>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a>
+  <a href="analytics.html">📊 Analytics</a>
+  <a href="login.html?role=admin">🔐 Admin Login</a>
+  <a href="login.html?role=student">🎓 Student Login</a>
+  <a href="login.html?role=ngo">🤝 NGO Login</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-circle hc1"></div>
+    <div class="hero-circle hc2"></div>
+    <div class="hero-grid"></div>
+  </div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">AI-Powered Food Waste Reduction</div>
+      <h1 class="hero-title">Smarter Canteen.<br><span>Zero Waste</span><br>Future.</h1>
+      <p class="hero-sub">GreenPlate uses predictive intelligence to eliminate food waste in college canteens — connecting surplus meals with students and NGOs who need them most.</p>
+      <div class="hero-cta">
+        <a href="login.html?role=student" class="btn-primary">Get Started →</a>
+        <a href="analytics.html" class="btn-outline">View Analytics</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num">40%</div><div class="stat-label">Waste Reduced</div></div>
+        <div class="stat"><div class="stat-num">320+</div><div class="stat-label">Meals Saved Daily</div></div>
+        <div class="stat"><div class="stat-num">12</div><div class="stat-label">NGO Partners</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="live-badge"><span class="pulse-dot"></span> Live Canteen Status</div>
+        <div class="hcard-title">Today's Availability</div>
+        <div class="food-row">
+          <div class="food-name"><span>🍚</span> Rice Meals</div>
+          <div class="food-bar-wrap"><div class="food-bar" style="width:72%"></div></div>
+          <div class="food-pct">72%</div>
+        </div>
+        <div class="food-row">
+          <div class="food-name"><span>🫓</span> Chapati</div>
+          <div class="food-bar-wrap"><div class="food-bar" style="width:55%;animation-delay:.2s"></div></div>
+          <div class="food-pct">55%</div>
+        </div>
+        <div class="food-row">
+          <div class="food-name"><span>🥣</span> Dal Curry</div>
+          <div class="food-bar-wrap"><div class="food-bar" style="width:88%;animation-delay:.4s"></div></div>
+          <div class="food-pct">88%</div>
+        </div>
+        <div class="food-row">
+          <div class="food-name"><span>🍛</span> Veg Meals</div>
+          <div class="food-bar-wrap"><div class="food-bar" style="width:40%;animation-delay:.6s"></div></div>
+          <div class="food-pct">40%</div>
+        </div>
+        <div class="food-row">
+          <div class="food-name"><span>🥤</span> Lassi</div>
+          <div class="food-bar-wrap"><div class="food-bar" style="width:63%;animation-delay:.8s"></div></div>
+          <div class="food-pct">63%</div>
+        </div>
+        <div style="margin-top:20px;padding:12px;background:rgba(111,207,151,.08);border-radius:10px;border:1px solid rgba(111,207,151,.2);text-align:center">
+          <div style="color:var(--lime);font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase">AI Prediction Tomorrow</div>
+          <div style="color:#fff;font-size:1.4rem;font-weight:700;margin-top:4px;font-family:'Playfair Display',serif">340 Plates</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section class="section" id="benefits">
+  <div class="section-inner">
+    <div style="text-align:center;max-width:600px;margin:0 auto 0">
+      <div class="section-tag">Why GreenPlate</div>
+      <h2 class="section-title">Every Plate Saved<br>Makes a Difference</h2>
+      <p class="section-sub">Food waste costs Indian colleges ₹2–4 lakh per month. GreenPlate cuts that by predicting demand and redistributing surplus.</p>
+    </div>
+    <div class="benefits-grid">
+      <div class="benefit-card fade-up">
+        <div class="benefit-icon">🧠</div>
+        <div class="benefit-title">AI Demand Prediction</div>
+        <p class="benefit-text">Our model analyses past consumption patterns, events, and day-of-week trends to forecast how many plates will be needed tomorrow.</p>
+      </div>
+      <div class="benefit-card fade-up">
+        <div class="benefit-icon">♻️</div>
+        <div class="benefit-title">Zero-Waste Distribution</div>
+        <p class="benefit-text">Surplus food is instantly listed for students to reserve at discounted rates, and NGOs to collect — nothing goes to the bin.</p>
+      </div>
+      <div class="benefit-card fade-up">
+        <div class="benefit-icon">💰</div>
+        <div class="benefit-title">Cost Savings</div>
+        <p class="benefit-text">Canteens cook only what's needed. Admin dashboards show daily savings so you can measure ROI in real time.</p>
+      </div>
+      <div class="benefit-card fade-up">
+        <div class="benefit-icon">📊</div>
+        <div class="benefit-title">Live Analytics</div>
+        <p class="benefit-text">Visual dashboards track waste trends, donation volumes, and efficiency scores — making sustainability measurable and motivating.</p>
+      </div>
+      <div class="benefit-card fade-up">
+        <div class="benefit-icon">🤝</div>
+        <div class="benefit-title">NGO Integration</div>
+        <p class="benefit-text">Registered NGOs get instant notifications, can request pickups, and confirm collections — all from a simple dashboard.</p>
+      </div>
+      <div class="benefit-card fade-up">
+        <div class="benefit-icon">🌱</div>
+        <div class="benefit-title">Carbon Impact</div>
+        <p class="benefit-text">Every kilogram of food saved prevents 2.5kg of CO₂ emissions. GreenPlate calculates and displays your campus's environmental impact.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="hiw">
+  <div class="hiw-inner">
+    <div style="text-align:center;max-width:580px;margin:0 auto">
+      <div class="section-tag" style="background:rgba(111,207,151,.15);color:var(--lime)">How It Works</div>
+      <h2 class="section-title">From Plate to Purpose<br>in 4 Steps</h2>
+      <p class="section-sub">A seamless closed-loop system that turns canteen data into action.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step fade-up">
+        <div class="step-num">01</div>
+        <div class="step-title">Admin Logs Data</div>
+        <p class="step-text">Canteen staff enter menu, meals prepared, meals sold, and leftover quantities each day.</p>
+      </div>
+      <div class="step fade-up">
+        <div class="step-num">02</div>
+        <div class="step-title">AI Predicts Demand</div>
+        <p class="step-text">The system calculates tomorrow's predicted requirement to prevent over-cooking.</p>
+      </div>
+      <div class="step fade-up">
+        <div class="step-num">03</div>
+        <div class="step-title">Surplus Published</div>
+        <p class="step-text">Leftover food is published in real time for students to reserve and NGOs to claim.</p>
+      </div>
+      <div class="step fade-up">
+        <div class="step-num">04</div>
+        <div class="step-title">Collection Confirmed</div>
+        <p class="step-text">Students pick up reserved meals; NGOs confirm bulk collections. Zero waste achieved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROLES -->
+<section class="section">
+  <div class="section-inner">
+    <div style="text-align:center;max-width:580px;margin:0 auto">
+      <div class="section-tag">Access Portals</div>
+      <h2 class="section-title">Choose Your Role</h2>
+      <p class="section-sub">Three dedicated dashboards — each tailored to how you interact with the canteen ecosystem.</p>
+    </div>
+    <div class="roles-grid" style="margin-top:56px">
+      <div class="role-card role-admin fade-up">
+        <div class="role-icon">🧑‍💼</div>
+        <div class="role-title">Admin Dashboard</div>
+        <ul class="role-list">
+          <li>Manage daily menu &amp; inventory</li>
+          <li>Log meals prepared &amp; sold</li>
+          <li>Publish surplus food listings</li>
+          <li>View demand predictions</li>
+          <li>Track donation analytics</li>
+        </ul>
+        <a href="login.html?role=admin" class="btn-role y">Admin Login →</a>
+      </div>
+      <div class="role-card role-student fade-up">
+        <div class="role-icon">🎓</div>
+        <div class="role-title">Student Dashboard</div>
+        <ul class="role-list">
+          <li>Browse leftover food listings</li>
+          <li>Reserve meals at reduced price</li>
+          <li>Track reservation status</li>
+          <li>View pickup instructions</li>
+          <li>Rate meal quality</li>
+        </ul>
+        <a href="login.html?role=student" class="btn-role g">Student Login →</a>
+      </div>
+      <div class="role-card role-ngo fade-up">
+        <div class="role-icon">🤝</div>
+        <div class="role-title">NGO Dashboard</div>
+        <ul class="role-list">
+          <li>View surplus food availability</li>
+          <li>Request bulk food pickups</li>
+          <li>Confirm collections</li>
+          <li>Download donation certificates</li>
+          <li>Track impact metrics</li>
+        </ul>
+        <a href="login.html?role=ngo" class="btn-role b">NGO Login →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">🌿</div>
+          <span class="logo-text" style="color:#fff">Green<span style="color:var(--lime)">Plate</span></span>
+        </a>
+        <p style="margin-top:12px">Smart College Canteen Food Waste Management System — building a sustainable, zero-waste campus ecosystem.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <a href="admin.html">Admin Dashboard</a>
+        <a href="student.html">Student Portal</a>
+        <a href="ngo.html">NGO Portal</a>
+        <a href="analytics.html">Analytics</a>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="login.html">Login</a>
+        <a href="#benefits">Benefits</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="footer-col" id="contact">
+        <h4>Contact</h4>
+        <div class="contact-item"><span class="contact-icon">📍</span> College Campus, Block-C</div>
+        <div class="contact-item"><span class="contact-icon">📧</span> greenplate@college.edu</div>
+        <div class="contact-item"><span class="contact-icon">📞</span> +91 98765 43210</div>
+        <div class="contact-item"><span class="contact-icon">🕐</span> Mon–Sat, 8 AM – 8 PM</div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 <span>GreenPlate</span> — Smart Canteen Food Waste Management System</p>
+      <p>Built with <span>♥</span> for the AI Product Sprint · Reducing waste, one plate at a time</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleMenu(){
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+// Fade-up on scroll
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:.15});
+document.querySelectorAll('.fade-up').forEach(el=>observer.observe(el));
+</script>
+</body>
+</html>
